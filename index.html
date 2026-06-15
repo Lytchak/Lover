@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>给你认真的好的照片墙</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+:root{
+  --bg: #1a0a10;
+  --bg2: #22101a;
+  --fg: #f5e6ec;
+  --muted: #9a7a8a;
+  --rose: #e8758a;
+  --rose-light: #f2a0b0;
+  --rose-deep: #c94e6e;
+  --gold: #e8c07a;
+  --accent-glow: rgba(232, 117, 138, 0.25);
+  --card: rgba(255, 220, 230, 0.04);
+  --border: rgba(232, 117, 138, 0.1);
+  --radius: 14px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Noto Sans SC', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== 氛围层 ===== */
+.atmo{
+  position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
+}
+.atmo .o{
+  position:absolute;border-radius:50%;filter:blur(120px);
+  animation:od 16s ease-in-out infinite alternate;
+}
+.atmo .o:nth-child(1){
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(232,117,138,.13),transparent 70%);
+  top:-10%;left:-8%;animation-duration:18s;
+}
+.atmo .o:nth-child(2){
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(232,192,122,.08),transparent 70%);
+  bottom:-15%;right:-10%;animation-duration:22s;animation-delay:-6s;
+}
+.atmo .o:nth-child(3){
+  width:350px;height:350px;
+  background:radial-gradient(circle,rgba(201,78,110,.1),transparent 70%);
+  top:40%;left:45%;animation-duration:14s;animation-delay:-3s;
+}
+.atmo .o:nth-child(4){
+  width:250px;height:250px;
+  background:radial-gradient(circle,rgba(242,160,176,.08),transparent 70%);
+  top:70%;left:20%;animation-duration:20s;animation-delay:-8s;
+}
+@keyframes od{
+  0%  {transform:translate(0,0) scale(1)}
+  33% {transform:translate(30px,-25px) scale(1.1)}
+  66% {transform:translate(-20px,15px) scale(.95)}
+  100%{transform:translate(10px,-10px) scale(1.05)}
+}
+
+/* 飘浮爱心 */
+.floating-hearts{
+  position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
+}
+.fh{
+  position:absolute;
+  color:var(--rose);
+  opacity:0;
+  animation:floatUp linear infinite;
+}
+@keyframes floatUp{
+  0%  {transform:translateY(100vh) rotate(0deg) scale(.6);opacity:0}
+  10% {opacity:.08}
+  90% {opacity:.06}
+  100%{transform:translateY(-10vh) rotate(45deg) scale(1);opacity:0}
+}
+
+/* 噪点 */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;opacity:.02;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px;pointer-events:none;
+}
+
+/* 鼠标光晕 - 粉色 */
+.glow{
+  position:fixed;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(232,117,138,.07),transparent 70%);
+  pointer-events:none;z-index:1;transform:translate(-50%,-50%);
+  transition:left .3s ease-out,top .3s ease-out;
+}
+
+/* ===== 页面 ===== */
+.page{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column}
+
+/* ===== 头部 ===== */
+header{
+  padding:64px 32px 28px;text-align:center;
+  position:relative;
+}
+
+/* 装饰线 */
+.deco-line{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  margin-bottom:20px;
+}
+.deco-line::before,.deco-line::after{
+  content:'';width:60px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--rose-light),transparent);
+}
+.deco-line .heart-icon{
+  color:var(--rose);font-size:14px;
+  animation:heartbeat 1.8s ease-in-out infinite;
+}
+@keyframes heartbeat{
+  0%,100%{transform:scale(1)}
+  15%{transform:scale(1.25)}
+  30%{transform:scale(1)}
+  45%{transform:scale(1.15)}
+  60%{transform:scale(1)}
+}
+
+/* 名字 */
+.her-name{
+  font-family:'Dancing Script','Noto Serif SC',cursive;
+  font-weight:700;
+  font-size:clamp(56px,10vw,110px);
+  line-height:1.1;
+  background:linear-gradient(135deg,var(--rose-light) 0%,var(--gold) 40%,var(--rose) 70%,var(--rose-light) 100%);
+  background-size:300% 300%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:nameShimmer 8s ease-in-out infinite;
+  margin-bottom:4px;
+  filter:drop-shadow(0 2px 20px rgba(232,117,138,.3));
+}
+@keyframes nameShimmer{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+
+.subtitle{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(16px,2.5vw,22px);
+  color:var(--rose-light);
+  font-weight:400;
+  letter-spacing:6px;
+  margin-top:8px;
+  opacity:.8;
+}
+
+.meta-line{
+  margin-top:16px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:12px;color:var(--muted);letter-spacing:1px;
+}
+.meta-line .dot{
+  width:4px;height:4px;border-radius:50%;background:var(--rose);opacity:.4;
+}
+
+/* ===== 网格 ===== */
+main{
+  flex:1;padding:24px 32px 80px;max-width:1500px;margin:0 auto;width:100%;
+}
+
+.masonry{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(360px,1fr));
+  grid-auto-rows:240px;
+  grid-auto-flow:dense;
+  gap:18px;
+}
+
+/* ===== 卡片 ===== */
+.card{
+  position:relative;border-radius:var(--radius);overflow:hidden;
+  cursor:pointer;background:var(--card);
+  border:1px solid var(--border);
+  transition:transform .45s cubic-bezier(.25,.46,.45,.94),
+             box-shadow .45s ease,border-color .3s ease;
+  opacity:0;transform:translateY(30px) scale(.97);
+}
+.card.v{animation:ci .65s cubic-bezier(.25,.46,.45,.94) forwards}
+@keyframes ci{to{opacity:1;transform:translateY(0) scale(1)}}
+
+.card:hover{
+  transform:translateY(-6px) scale(1.01);
+  box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 40px var(--accent-glow);
+  border-color:rgba(232,117,138,.25);
+}
+
+.card.portrait{grid-row:span 2}
+.card.feature{grid-column:span 2;grid-row:span 2}
+.card.wide{grid-column:span 2}
+.card.tall{grid-row:span 2}
+.card.tall img{object-position:center 30%}
+
+.card img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .6s cubic-bezier(.25,.46,.45,.94),filter .4s ease;
+}
+.card:hover img{
+  transform:scale(1.07);
+  filter:brightness(1.05) saturate(1.1);
+}
+
+/* 骨架屏 - 粉色调 */
+.card .sk{
+  position:absolute;inset:0;z-index:1;
+  background:linear-gradient(90deg,var(--bg2) 25%,rgba(232,117,138,.04) 50%,var(--bg2) 75%);
+  background-size:200% 100%;animation:sb 1.4s ease-in-out infinite;
+}
+@keyframes sb{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.card.ld .sk{opacity:0;transition:opacity .4s ease;pointer-events:none}
+
+/* 序号 - 爱心风格 */
+.card .idx{
+  position:absolute;top:12px;left:12px;
+  padding:4px 12px;border-radius:20px;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(232,117,138,.2);
+  display:flex;align-items:center;gap:5px;
+  font-family:'Noto Serif SC',serif;font-size:11px;font-weight:600;
+  color:var(--rose-light);z-index:3;
+  transition:background .3s,transform .3s,color .3s;
+}
+.card .idx i{
+  font-size:9px;
+}
+.card:hover .idx{
+  background:var(--rose);color:#fff;transform:scale(1.06);
+}
+.card:hover .idx i{
+  animation:heartbeat .8s ease-in-out infinite;
+}
+
+/* 底部信息 */
+.card .info{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:44px 18px 18px;
+  background:linear-gradient(to top,rgba(26,10,16,.8) 0%,transparent 100%);
+  transform:translateY(100%);
+  transition:transform .4s cubic-bezier(.25,.46,.45,.94);
+  z-index:3;
+}
+.card:hover .info{transform:translateY(0)}
+.card .nm{font-weight:600;font-size:14px;margin-bottom:4px;color:var(--rose-light)}
+.card .mt{font-size:11px;color:rgba(245,230,236,.5);display:flex;align-items:center;gap:6px}
+.card .mt i{font-size:9px;color:var(--rose)}
+
+/* ===== 灯箱 ===== */
+.lb{
+  position:fixed;inset:0;z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(26,10,16,.95);
+  backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  opacity:0;visibility:hidden;
+  transition:opacity .4s,visibility .4s;
+}
+.lb.on{opacity:1;visibility:visible}
+.lb img{
+  max-width:92vw;max-height:88vh;object-fit:contain;
+  border-radius:8px;
+  box-shadow:0 30px 100px rgba(0,0,0,.5),0 0 60px rgba(232,117,138,.1);
+  transform:scale(.88);
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1);
+}
+.lb.on img{transform:scale(1)}
+
+.lb .x,.lb .n{
+  position:absolute;border-radius:50%;cursor:pointer;
+  background:rgba(232,117,138,.1);border:1px solid rgba(232,117,138,.15);
+  color:var(--rose-light);display:flex;align-items:center;justify-content:center;
+  transition:background .25s,transform .25s;
+}
+.lb .x:hover,.lb .n:hover{background:rgba(232,117,138,.2)}
+.lb .x{
+  top:22px;right:24px;width:46px;height:46px;font-size:18px;
+}
+.lb .x:hover{transform:rotate(90deg)}
+.lb .n{
+  top:50%;transform:translateY(-50%);width:52px;height:52px;font-size:16px;
+}
+.lb .n:hover{transform:translateY(-50%) scale(1.08)}
+.lb .pv{left:24px}
+.lb .nx{right:24px}
+.lb .ct{
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  font-size:12px;color:var(--muted);letter-spacing:2px;
+  display:flex;align-items:center;gap:8px;
+}
+.lb .ct i{color:var(--rose);font-size:10px}
+
+.empty{
+  text-align:center;padding:80px 20px;color:var(--muted);grid-column:1/-1;
+}
+.empty i{font-size:48px;opacity:.2;margin-bottom:16px;display:block;color:var(--rose)}
+.empty p{font-size:14px;margin-top:8px}
+
+/* ===== 底部 ===== */
+footer{
+  text-align:center;padding:24px 32px 40px;color:var(--muted);
+  font-size:11px;letter-spacing:1px;position:relative;z-index:2;
+}
+footer .footer-heart{
+  color:var(--rose);display:inline-block;
+  animation:heartbeat 1.8s ease-in-out infinite;
+}
+footer::before{
+  content:'';display:block;width:40px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--rose),transparent);
+  margin:0 auto 16px;opacity:.4;
+}
+
+/* 响应式 */
+@media(max-width:768px){
+  .masonry{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));grid-auto-rows:200px;gap:14px}
+  header{padding:48px 20px 20px}
+}
+@media(max-width:520px){
+  header{padding:36px 16px 16px}
+  main{padding:14px 14px 60px}
+  .masonry{grid-template-columns:1fr 1fr;grid-auto-rows:170px;gap:10px}
+  .her-name{letter-spacing:0}
+  .subtitle{letter-spacing:3px}
+  .lb .n{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<div class="atmo">
+  <div class="o"></div><div class="o"></div><div class="o"></div><div class="o"></div>
+</div>
+
+<div class="floating-hearts" id="fh"></div>
+<div class="glow" id="glow"></div>
+
+<div class="page">
+  <header>
+    <div class="deco-line"><span class="heart-icon"><i class="fas fa-heart"></i></span></div>
+    <div class="her-name">你认真的好</div>
+    <div class="subtitle">每一帧 都是心动</div>
+    <div class="meta-line">
+      <span>Our Gallery</span>
+      <span class="dot"></span>
+      <span><i class="fas fa-heart" style="color:var(--rose);font-size:8px"></i> 67 Moments</span>
+    </div>
+  </header>
+  <main>
+    <div class="masonry" id="wall">
+      <div class="card portrait feature" data-i="0">
+        <div class="sk"></div>
+        <img src="pics/You_001.jpg" alt="You_001" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 01</span>
+        <div class="info"><div class="nm">You_001</div><div class="mt"><i class="fas fa-heart"></i> Memory #1</div></div>
+      </div>
+      <div class="card portrait" data-i="1">
+        <div class="sk"></div>
+        <img src="pics/You_002.jpg" alt="You_002" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 02</span>
+        <div class="info"><div class="nm">You_002</div><div class="mt"><i class="fas fa-heart"></i> Memory #2</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="2">
+        <div class="sk"></div>
+        <img src="pics/You_003.jpg" alt="You_003" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 03</span>
+        <div class="info"><div class="nm">You_003</div><div class="mt"><i class="fas fa-heart"></i> Memory #3</div></div>
+      </div>
+      <div class="card portrait" data-i="3">
+        <div class="sk"></div>
+        <img src="pics/You_004.jpg" alt="You_004" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 04</span>
+        <div class="info"><div class="nm">You_004</div><div class="mt"><i class="fas fa-heart"></i> Memory #4</div></div>
+      </div>
+      <div class="card portrait" data-i="4">
+        <div class="sk"></div>
+        <img src="pics/You_005.jpg" alt="You_005" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 05</span>
+        <div class="info"><div class="nm">You_005</div><div class="mt"><i class="fas fa-heart"></i> Memory #5</div></div>
+      </div>
+      <div class="card portrait feature" data-i="5">
+        <div class="sk"></div>
+        <img src="pics/You_006.jpg" alt="You_006" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 06</span>
+        <div class="info"><div class="nm">You_006</div><div class="mt"><i class="fas fa-heart"></i> Memory #6</div></div>
+      </div>
+      <div class="card portrait" data-i="6">
+        <div class="sk"></div>
+        <img src="pics/You_007.jpg" alt="You_007" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 07</span>
+        <div class="info"><div class="nm">You_007</div><div class="mt"><i class="fas fa-heart"></i> Memory #7</div></div>
+      </div>
+      <div class="card portrait" data-i="7">
+        <div class="sk"></div>
+        <img src="pics/You_008.jpg" alt="You_008" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 08</span>
+        <div class="info"><div class="nm">You_008</div><div class="mt"><i class="fas fa-heart"></i> Memory #8</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="8">
+        <div class="sk"></div>
+        <img src="pics/You_009.jpg" alt="You_009" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 09</span>
+        <div class="info"><div class="nm">You_009</div><div class="mt"><i class="fas fa-heart"></i> Memory #9</div></div>
+      </div>
+      <div class="card portrait" data-i="9">
+        <div class="sk"></div>
+        <img src="pics/You_010.jpg" alt="You_010" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 10</span>
+        <div class="info"><div class="nm">You_010</div><div class="mt"><i class="fas fa-heart"></i> Memory #10</div></div>
+      </div>
+      <div class="card portrait" data-i="10">
+        <div class="sk"></div>
+        <img src="pics/You_011.jpg" alt="You_011" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 11</span>
+        <div class="info"><div class="nm">You_011</div><div class="mt"><i class="fas fa-heart"></i> Memory #11</div></div>
+      </div>
+      <div class="card portrait feature" data-i="11">
+        <div class="sk"></div>
+        <img src="pics/You_012.jpg" alt="You_012" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 12</span>
+        <div class="info"><div class="nm">You_012</div><div class="mt"><i class="fas fa-heart"></i> Memory #12</div></div>
+      </div>
+      <div class="card portrait feature" data-i="12">
+        <div class="sk"></div>
+        <img src="pics/You_013.jpg" alt="You_013" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 13</span>
+        <div class="info"><div class="nm">You_013</div><div class="mt"><i class="fas fa-heart"></i> Memory #13</div></div>
+      </div>
+      <div class="card portrait" data-i="13">
+        <div class="sk"></div>
+        <img src="pics/You_014.jpg" alt="You_014" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 14</span>
+        <div class="info"><div class="nm">You_014</div><div class="mt"><i class="fas fa-heart"></i> Memory #14</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="14">
+        <div class="sk"></div>
+        <img src="pics/You_015.jpg" alt="You_015" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 15</span>
+        <div class="info"><div class="nm">You_015</div><div class="mt"><i class="fas fa-heart"></i> Memory #15</div></div>
+      </div>
+      <div class="card portrait" data-i="15">
+        <div class="sk"></div>
+        <img src="pics/You_016.jpg" alt="You_016" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 16</span>
+        <div class="info"><div class="nm">You_016</div><div class="mt"><i class="fas fa-heart"></i> Memory #16</div></div>
+      </div>
+      <div class="card portrait" data-i="16">
+        <div class="sk"></div>
+        <img src="pics/You_017.jpg" alt="You_017" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 17</span>
+        <div class="info"><div class="nm">You_017</div><div class="mt"><i class="fas fa-heart"></i> Memory #17</div></div>
+      </div>
+      <div class="card portrait feature" data-i="17">
+        <div class="sk"></div>
+        <img src="pics/You_018.jpg" alt="You_018" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 18</span>
+        <div class="info"><div class="nm">You_018</div><div class="mt"><i class="fas fa-heart"></i> Memory #18</div></div>
+      </div>
+      <div class="card portrait" data-i="18">
+        <div class="sk"></div>
+        <img src="pics/You_019.jpg" alt="You_019" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 19</span>
+        <div class="info"><div class="nm">You_019</div><div class="mt"><i class="fas fa-heart"></i> Memory #19</div></div>
+      </div>
+      <div class="card portrait" data-i="19">
+        <div class="sk"></div>
+        <img src="pics/You_020.jpg" alt="You_020" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 20</span>
+        <div class="info"><div class="nm">You_020</div><div class="mt"><i class="fas fa-heart"></i> Memory #20</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="20">
+        <div class="sk"></div>
+        <img src="pics/You_021.jpg" alt="You_021" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 21</span>
+        <div class="info"><div class="nm">You_021</div><div class="mt"><i class="fas fa-heart"></i> Memory #21</div></div>
+      </div>
+      <div class="card" data-i="21">
+        <div class="sk"></div>
+        <img src="pics/You_022.jpg" alt="You_022" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 22</span>
+        <div class="info"><div class="nm">You_022</div><div class="mt"><i class="fas fa-heart"></i> Memory #22</div></div>
+      </div>
+      <div class="card" data-i="22">
+        <div class="sk"></div>
+        <img src="pics/You_023.jpg" alt="You_023" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 23</span>
+        <div class="info"><div class="nm">You_023</div><div class="mt"><i class="fas fa-heart"></i> Memory #23</div></div>
+      </div>
+      <div class="card portrait feature" data-i="23">
+        <div class="sk"></div>
+        <img src="pics/You_024.jpg" alt="You_024" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 24</span>
+        <div class="info"><div class="nm">You_024</div><div class="mt"><i class="fas fa-heart"></i> Memory #24</div></div>
+      </div>
+      <div class="card portrait feature" data-i="24">
+        <div class="sk"></div>
+        <img src="pics/You_025.jpg" alt="You_025" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 25</span>
+        <div class="info"><div class="nm">You_025</div><div class="mt"><i class="fas fa-heart"></i> Memory #25</div></div>
+      </div>
+      <div class="card portrait" data-i="25">
+        <div class="sk"></div>
+        <img src="pics/You_026.jpg" alt="You_026" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 26</span>
+        <div class="info"><div class="nm">You_026</div><div class="mt"><i class="fas fa-heart"></i> Memory #26</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="26">
+        <div class="sk"></div>
+        <img src="pics/You_027.jpg" alt="You_027" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 27</span>
+        <div class="info"><div class="nm">You_027</div><div class="mt"><i class="fas fa-heart"></i> Memory #27</div></div>
+      </div>
+      <div class="card portrait" data-i="27">
+        <div class="sk"></div>
+        <img src="pics/You_028.jpg" alt="You_028" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 28</span>
+        <div class="info"><div class="nm">You_028</div><div class="mt"><i class="fas fa-heart"></i> Memory #28</div></div>
+      </div>
+      <div class="card portrait" data-i="28">
+        <div class="sk"></div>
+        <img src="pics/You_029.jpg" alt="You_029" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 29</span>
+        <div class="info"><div class="nm">You_029</div><div class="mt"><i class="fas fa-heart"></i> Memory #29</div></div>
+      </div>
+      <div class="card portrait feature" data-i="29">
+        <div class="sk"></div>
+        <img src="pics/You_030.jpg" alt="You_030" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 30</span>
+        <div class="info"><div class="nm">You_030</div><div class="mt"><i class="fas fa-heart"></i> Memory #30</div></div>
+      </div>
+      <div class="card portrait" data-i="30">
+        <div class="sk"></div>
+        <img src="pics/You_031.jpg" alt="You_031" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 31</span>
+        <div class="info"><div class="nm">You_031</div><div class="mt"><i class="fas fa-heart"></i> Memory #31</div></div>
+      </div>
+      <div class="card portrait" data-i="31">
+        <div class="sk"></div>
+        <img src="pics/You_032.jpg" alt="You_032" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 32</span>
+        <div class="info"><div class="nm">You_032</div><div class="mt"><i class="fas fa-heart"></i> Memory #32</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="32">
+        <div class="sk"></div>
+        <img src="pics/You_033.jpg" alt="You_033" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 33</span>
+        <div class="info"><div class="nm">You_033</div><div class="mt"><i class="fas fa-heart"></i> Memory #33</div></div>
+      </div>
+      <div class="card portrait" data-i="33">
+        <div class="sk"></div>
+        <img src="pics/You_034.jpg" alt="You_034" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 34</span>
+        <div class="info"><div class="nm">You_034</div><div class="mt"><i class="fas fa-heart"></i> Memory #34</div></div>
+      </div>
+      <div class="card portrait" data-i="34">
+        <div class="sk"></div>
+        <img src="pics/You_035.jpg" alt="You_035" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 35</span>
+        <div class="info"><div class="nm">You_035</div><div class="mt"><i class="fas fa-heart"></i> Memory #35</div></div>
+      </div>
+      <div class="card portrait feature" data-i="35">
+        <div class="sk"></div>
+        <img src="pics/You_036.jpg" alt="You_036" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 36</span>
+        <div class="info"><div class="nm">You_036</div><div class="mt"><i class="fas fa-heart"></i> Memory #36</div></div>
+      </div>
+      <div class="card portrait feature" data-i="36">
+        <div class="sk"></div>
+        <img src="pics/You_037.jpg" alt="You_037" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 37</span>
+        <div class="info"><div class="nm">You_037</div><div class="mt"><i class="fas fa-heart"></i> Memory #37</div></div>
+      </div>
+      <div class="card portrait" data-i="37">
+        <div class="sk"></div>
+        <img src="pics/You_038.jpg" alt="You_038" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 38</span>
+        <div class="info"><div class="nm">You_038</div><div class="mt"><i class="fas fa-heart"></i> Memory #38</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="38">
+        <div class="sk"></div>
+        <img src="pics/You_039.jpg" alt="You_039" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 39</span>
+        <div class="info"><div class="nm">You_039</div><div class="mt"><i class="fas fa-heart"></i> Memory #39</div></div>
+      </div>
+      <div class="card portrait" data-i="39">
+        <div class="sk"></div>
+        <img src="pics/You_040.jpg" alt="You_040" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 40</span>
+        <div class="info"><div class="nm">You_040</div><div class="mt"><i class="fas fa-heart"></i> Memory #40</div></div>
+      </div>
+      <div class="card portrait" data-i="40">
+        <div class="sk"></div>
+        <img src="pics/You_041.jpg" alt="You_041" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 41</span>
+        <div class="info"><div class="nm">You_041</div><div class="mt"><i class="fas fa-heart"></i> Memory #41</div></div>
+      </div>
+      <div class="card portrait feature" data-i="41">
+        <div class="sk"></div>
+        <img src="pics/You_042.jpg" alt="You_042" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 42</span>
+        <div class="info"><div class="nm">You_042</div><div class="mt"><i class="fas fa-heart"></i> Memory #42</div></div>
+      </div>
+      <div class="card portrait" data-i="42">
+        <div class="sk"></div>
+        <img src="pics/You_043.jpg" alt="You_043" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 43</span>
+        <div class="info"><div class="nm">You_043</div><div class="mt"><i class="fas fa-heart"></i> Memory #43</div></div>
+      </div>
+      <div class="card portrait" data-i="43">
+        <div class="sk"></div>
+        <img src="pics/You_044.jpg" alt="You_044" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 44</span>
+        <div class="info"><div class="nm">You_044</div><div class="mt"><i class="fas fa-heart"></i> Memory #44</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="44">
+        <div class="sk"></div>
+        <img src="pics/You_045.jpg" alt="You_045" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 45</span>
+        <div class="info"><div class="nm">You_045</div><div class="mt"><i class="fas fa-heart"></i> Memory #45</div></div>
+      </div>
+      <div class="card portrait" data-i="45">
+        <div class="sk"></div>
+        <img src="pics/You_046.jpg" alt="You_046" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 46</span>
+        <div class="info"><div class="nm">You_046</div><div class="mt"><i class="fas fa-heart"></i> Memory #46</div></div>
+      </div>
+      <div class="card portrait" data-i="46">
+        <div class="sk"></div>
+        <img src="pics/You_047.jpg" alt="You_047" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 47</span>
+        <div class="info"><div class="nm">You_047</div><div class="mt"><i class="fas fa-heart"></i> Memory #47</div></div>
+      </div>
+      <div class="card portrait feature" data-i="47">
+        <div class="sk"></div>
+        <img src="pics/You_048.jpg" alt="You_048" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 48</span>
+        <div class="info"><div class="nm">You_048</div><div class="mt"><i class="fas fa-heart"></i> Memory #48</div></div>
+      </div>
+      <div class="card portrait feature" data-i="48">
+        <div class="sk"></div>
+        <img src="pics/You_049.jpg" alt="You_049" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 49</span>
+        <div class="info"><div class="nm">You_049</div><div class="mt"><i class="fas fa-heart"></i> Memory #49</div></div>
+      </div>
+      <div class="card portrait" data-i="49">
+        <div class="sk"></div>
+        <img src="pics/You_050.jpg" alt="You_050" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 50</span>
+        <div class="info"><div class="nm">You_050</div><div class="mt"><i class="fas fa-heart"></i> Memory #50</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="50">
+        <div class="sk"></div>
+        <img src="pics/You_051.jpg" alt="You_051" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 51</span>
+        <div class="info"><div class="nm">You_051</div><div class="mt"><i class="fas fa-heart"></i> Memory #51</div></div>
+      </div>
+      <div class="card portrait" data-i="51">
+        <div class="sk"></div>
+        <img src="pics/You_052.jpg" alt="You_052" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 52</span>
+        <div class="info"><div class="nm">You_052</div><div class="mt"><i class="fas fa-heart"></i> Memory #52</div></div>
+      </div>
+      <div class="card portrait" data-i="52">
+        <div class="sk"></div>
+        <img src="pics/You_053.jpg" alt="You_053" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 53</span>
+        <div class="info"><div class="nm">You_053</div><div class="mt"><i class="fas fa-heart"></i> Memory #53</div></div>
+      </div>
+      <div class="card portrait feature" data-i="53">
+        <div class="sk"></div>
+        <img src="pics/You_054.jpg" alt="You_054" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 54</span>
+        <div class="info"><div class="nm">You_054</div><div class="mt"><i class="fas fa-heart"></i> Memory #54</div></div>
+      </div>
+      <div class="card portrait" data-i="54">
+        <div class="sk"></div>
+        <img src="pics/You_055.jpg" alt="You_055" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 55</span>
+        <div class="info"><div class="nm">You_055</div><div class="mt"><i class="fas fa-heart"></i> Memory #55</div></div>
+      </div>
+      <div class="card" data-i="55">
+        <div class="sk"></div>
+        <img src="pics/You_056.jpg" alt="You_056" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 56</span>
+        <div class="info"><div class="nm">You_056</div><div class="mt"><i class="fas fa-heart"></i> Memory #56</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="56">
+        <div class="sk"></div>
+        <img src="pics/You_057.jpg" alt="You_057" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 57</span>
+        <div class="info"><div class="nm">You_057</div><div class="mt"><i class="fas fa-heart"></i> Memory #57</div></div>
+      </div>
+      <div class="card portrait" data-i="57">
+        <div class="sk"></div>
+        <img src="pics/You_058.jpg" alt="You_058" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 58</span>
+        <div class="info"><div class="nm">You_058</div><div class="mt"><i class="fas fa-heart"></i> Memory #58</div></div>
+      </div>
+      <div class="card" data-i="58">
+        <div class="sk"></div>
+        <img src="pics/You_059.jpg" alt="You_059" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 59</span>
+        <div class="info"><div class="nm">You_059</div><div class="mt"><i class="fas fa-heart"></i> Memory #59</div></div>
+      </div>
+      <div class="card portrait feature" data-i="59">
+        <div class="sk"></div>
+        <img src="pics/You_060.jpg" alt="You_060" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 60</span>
+        <div class="info"><div class="nm">You_060</div><div class="mt"><i class="fas fa-heart"></i> Memory #60</div></div>
+      </div>
+      <div class="card portrait feature" data-i="60">
+        <div class="sk"></div>
+        <img src="pics/You_061.jpg" alt="You_061" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 61</span>
+        <div class="info"><div class="nm">You_061</div><div class="mt"><i class="fas fa-heart"></i> Memory #61</div></div>
+      </div>
+      <div class="card portrait" data-i="61">
+        <div class="sk"></div>
+        <img src="pics/You_062.jpg" alt="You_062" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 62</span>
+        <div class="info"><div class="nm">You_062</div><div class="mt"><i class="fas fa-heart"></i> Memory #62</div></div>
+      </div>
+      <div class="card portrait portrait" data-i="62">
+        <div class="sk"></div>
+        <img src="pics/You_063.jpg" alt="You_063" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 63</span>
+        <div class="info"><div class="nm">You_063</div><div class="mt"><i class="fas fa-heart"></i> Memory #63</div></div>
+      </div>
+      <div class="card portrait" data-i="63">
+        <div class="sk"></div>
+        <img src="pics/You_064.jpg" alt="You_064" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 64</span>
+        <div class="info"><div class="nm">You_064</div><div class="mt"><i class="fas fa-heart"></i> Memory #64</div></div>
+      </div>
+      <div class="card portrait" data-i="64">
+        <div class="sk"></div>
+        <img src="pics/You_065.jpg" alt="You_065" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 65</span>
+        <div class="info"><div class="nm">You_065</div><div class="mt"><i class="fas fa-heart"></i> Memory #65</div></div>
+      </div>
+      <div class="card portrait feature" data-i="65">
+        <div class="sk"></div>
+        <img src="pics/You_066.jpg" alt="You_066" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 66</span>
+        <div class="info"><div class="nm">You_066</div><div class="mt"><i class="fas fa-heart"></i> Memory #66</div></div>
+      </div>
+      <div class="card portrait" data-i="66">
+        <div class="sk"></div>
+        <img src="pics/You_067.jpg" alt="You_067" loading="lazy">
+        <span class="idx"><i class="fas fa-heart"></i> 67</span>
+        <div class="info"><div class="nm">You_067</div><div class="mt"><i class="fas fa-heart"></i> Memory #67</div></div>
+      </div>
+    </div>
+  </main>
+  <footer>
+    Made with <span class="footer-heart"><i class="fas fa-heart"></i></span> for 你认真的好
+  </footer>
+</div>
+
+<div class="lb" id="lb" role="dialog" aria-label="图片查看">
+  <button class="x" aria-label="关闭"><i class="fas fa-times"></i></button>
+  <button class="n pv" aria-label="上一张"><i class="fas fa-chevron-left"></i></button>
+  <button class="n nx" aria-label="下一张"><i class="fas fa-chevron-right"></i></button>
+  <img id="lbImg" src="" alt="">
+  <div class="ct" id="lbCnt"></div>
+</div>
+
+<script>
+// 飘浮爱心
+(function(){
+  const container=document.getElementById('fh');
+  const symbols=['♥','♡','❤','💕'];
+  for(let i=0;i<18;i++){
+    const h=document.createElement('div');
+    h.className='fh';
+    h.textContent=symbols[i%symbols.length];
+    h.style.left=Math.random()*100+'%';
+    h.style.fontSize=(10+Math.random()*16)+'px';
+    h.style.animationDuration=(12+Math.random()*18)+'s';
+    h.style.animationDelay=(-Math.random()*20)+'s';
+    container.appendChild(h);
+  }
+})();
+
+// 图片加载
+document.querySelectorAll('.card').forEach(c=>{
+  const img=c.querySelector('img');
+  img.addEventListener('load',()=>c.classList.add('ld'));
+  img.addEventListener('error',()=>{
+    c.classList.add('ld');img.style.display='none';
+    const ph=document.createElement('div');
+    ph.style.cssText='width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;';
+    ph.innerHTML='<i class="fas fa-heart-broken" style="font-size:28px;opacity:.2"></i>';
+    c.appendChild(ph);
+  });
+});
+
+// 入场动画
+const obs=new IntersectionObserver(e=>{
+  e.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('v');
+      e.target.style.animationDelay=Math.min(parseInt(e.target.dataset.i)*.07,1)+'s';
+      obs.unobserve(e.target);
+    }
+  });
+},{threshold:.05});
+document.querySelectorAll('.card').forEach(c=>obs.observe(c));
+
+// 灯箱
+const photos=[
+  { src: "pics/You_001.jpg", name: "You_001" },
+  { src: "pics/You_002.jpg", name: "You_002" },
+  { src: "pics/You_003.jpg", name: "You_003" },
+  { src: "pics/You_004.jpg", name: "You_004" },
+  { src: "pics/You_005.jpg", name: "You_005" },
+  { src: "pics/You_006.jpg", name: "You_006" },
+  { src: "pics/You_007.jpg", name: "You_007" },
+  { src: "pics/You_008.jpg", name: "You_008" },
+  { src: "pics/You_009.jpg", name: "You_009" },
+  { src: "pics/You_010.jpg", name: "You_010" },
+  { src: "pics/You_011.jpg", name: "You_011" },
+  { src: "pics/You_012.jpg", name: "You_012" },
+  { src: "pics/You_013.jpg", name: "You_013" },
+  { src: "pics/You_014.jpg", name: "You_014" },
+  { src: "pics/You_015.jpg", name: "You_015" },
+  { src: "pics/You_016.jpg", name: "You_016" },
+  { src: "pics/You_017.jpg", name: "You_017" },
+  { src: "pics/You_018.jpg", name: "You_018" },
+  { src: "pics/You_019.jpg", name: "You_019" },
+  { src: "pics/You_020.jpg", name: "You_020" },
+  { src: "pics/You_021.jpg", name: "You_021" },
+  { src: "pics/You_022.jpg", name: "You_022" },
+  { src: "pics/You_023.jpg", name: "You_023" },
+  { src: "pics/You_024.jpg", name: "You_024" },
+  { src: "pics/You_025.jpg", name: "You_025" },
+  { src: "pics/You_026.jpg", name: "You_026" },
+  { src: "pics/You_027.jpg", name: "You_027" },
+  { src: "pics/You_028.jpg", name: "You_028" },
+  { src: "pics/You_029.jpg", name: "You_029" },
+  { src: "pics/You_030.jpg", name: "You_030" },
+  { src: "pics/You_031.jpg", name: "You_031" },
+  { src: "pics/You_032.jpg", name: "You_032" },
+  { src: "pics/You_033.jpg", name: "You_033" },
+  { src: "pics/You_034.jpg", name: "You_034" },
+  { src: "pics/You_035.jpg", name: "You_035" },
+  { src: "pics/You_036.jpg", name: "You_036" },
+  { src: "pics/You_037.jpg", name: "You_037" },
+  { src: "pics/You_038.jpg", name: "You_038" },
+  { src: "pics/You_039.jpg", name: "You_039" },
+  { src: "pics/You_040.jpg", name: "You_040" },
+  { src: "pics/You_041.jpg", name: "You_041" },
+  { src: "pics/You_042.jpg", name: "You_042" },
+  { src: "pics/You_043.jpg", name: "You_043" },
+  { src: "pics/You_044.jpg", name: "You_044" },
+  { src: "pics/You_045.jpg", name: "You_045" },
+  { src: "pics/You_046.jpg", name: "You_046" },
+  { src: "pics/You_047.jpg", name: "You_047" },
+  { src: "pics/You_048.jpg", name: "You_048" },
+  { src: "pics/You_049.jpg", name: "You_049" },
+  { src: "pics/You_050.jpg", name: "You_050" },
+  { src: "pics/You_051.jpg", name: "You_051" },
+  { src: "pics/You_052.jpg", name: "You_052" },
+  { src: "pics/You_053.jpg", name: "You_053" },
+  { src: "pics/You_054.jpg", name: "You_054" },
+  { src: "pics/You_055.jpg", name: "You_055" },
+  { src: "pics/You_056.jpg", name: "You_056" },
+  { src: "pics/You_057.jpg", name: "You_057" },
+  { src: "pics/You_058.jpg", name: "You_058" },
+  { src: "pics/You_059.jpg", name: "You_059" },
+  { src: "pics/You_060.jpg", name: "You_060" },
+  { src: "pics/You_061.jpg", name: "You_061" },
+  { src: "pics/You_062.jpg", name: "You_062" },
+  { src: "pics/You_063.jpg", name: "You_063" },
+  { src: "pics/You_064.jpg", name: "You_064" },
+  { src: "pics/You_065.jpg", name: "You_065" },
+  { src: "pics/You_066.jpg", name: "You_066" },
+  { src: "pics/You_067.jpg", name: "You_067" }
+];
+const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg'),lbCnt=document.getElementById('lbCnt');
+let cur=0;
+function open(i){
+  cur=i;lbImg.src=photos[i].src;lbImg.alt=photos[i].name;
+  lbCnt.innerHTML='<i class="fas fa-heart"></i> '+(i+1)+' / '+photos.length;
+  lb.classList.add('on');document.body.style.overflow='hidden';
+}
+function close(){lb.classList.remove('on');document.body.style.overflow=''}
+function nav(d){
+  cur=(cur+d+photos.length)%photos.length;
+  lbImg.style.opacity='.4';lbImg.style.transform='scale(.92)';
+  setTimeout(()=>{
+    lbImg.src=photos[cur].src;lbImg.alt=photos[cur].name;
+    lbCnt.innerHTML='<i class="fas fa-heart"></i> '+(cur+1)+' / '+photos.length;
+    lbImg.style.opacity='1';lbImg.style.transform='scale(1)';
+  },140);
+}
+document.getElementById('wall').addEventListener('click',e=>{
+  const c=e.target.closest('.card');if(c)open(parseInt(c.dataset.i));
+});
+lb.querySelector('.x').addEventListener('click',close);
+lb.querySelector('.pv').addEventListener('click',()=>nav(-1));
+lb.querySelector('.nx').addEventListener('click',()=>nav(1));
+lb.addEventListener('click',e=>{if(e.target===lb)close()});
+document.addEventListener('keydown',e=>{
+  if(!lb.classList.contains('on'))return;
+  if(e.key==='Escape')close();
+  if(e.key==='ArrowLeft')nav(-1);
+  if(e.key==='ArrowRight')nav(1);
+});
+
+// 鼠标光晕
+const glow=document.getElementById('glow');let mx=-400,my=-400;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+(function g(){glow.style.left=mx+'px';glow.style.top=my+'px';requestAnimationFrame(g)})();
+if('ontouchstart' in window)glow.style.display='none';
+</script>
+</body>
+</html>
